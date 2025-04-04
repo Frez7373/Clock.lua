@@ -1,0 +1,40 @@
+print("== Notes ==")
+local file = "notes.txt"
+
+-- Reading saved notes
+if fs.exists(file) then
+  local h = fs.open(file, "r")
+  local text = h.readAll()
+  h.close()
+  print("Saved notes:")
+  print(text)
+else
+  print("No notes found.")
+end
+
+-- Writing a new note
+write("New note: ")
+local input = read()
+local h = fs.open(file, "w")
+h.write(input)
+h.close()
+print("Note saved!")
+
+-- Function to clear the screen on click
+local function clearScreen()
+  term.clear()  -- Clear the screen
+  term.setCursorPos(1, 1)  -- Move the cursor back to the top-left
+  print("Screen cleared!")
+end
+
+-- Waiting for a mouse click on the screen
+print("Tap to return or click to clear the screen...")
+while true do
+  local event, button, x, y = os.pullEvent("mouse_click")
+  
+  -- Check if the click was within the clear screen button area
+  if x >= 1 and x <= 10 and y >= 1 and y <= 3 then  -- You can adjust these coordinates for the button
+    clearScreen()
+    break
+  end
+end
