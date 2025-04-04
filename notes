@@ -20,21 +20,49 @@ h.write(input)
 h.close()
 print("Note saved!")
 
--- Function to clear the screen on click
+-- Function to clear the screen with custom design
 local function clearScreen()
   term.clear()  -- Clear the screen
-  term.setCursorPos(1, 1)  -- Move the cursor back to the top-left
-  print("Screen cleared!")
+  term.setCursorPos(1, 1)  -- Reset cursor position
+  -- Draw a border
+  print("*************************************")
+  for i = 1, 3 do
+    print("*                                   *")
+  end
+  print("*************************************")
+  print("Screen cleared!")  -- Inform user
 end
 
--- Waiting for a mouse click on the screen
-print("Tap to return or click to clear the screen...")
+-- Function to clear notes
+local function clearNotes()
+  local h = fs.open(file, "w")
+  h.close()  -- Clear the file
+  print("Notes cleared!")
+end
+
+-- Function to exit the program
+local function exitProgram()
+  term.clear()  -- Clear the screen
+  term.setCursorPos(1, 1)
+  print("Exiting program...")
+  os.sleep(1)  -- Wait for a second before exiting
+  os.exit()  -- Exit the program
+end
+
+-- Waiting for mouse clicks on the screen
+print("Click to clear notes, exit, or return...")
 while true do
   local event, button, x, y = os.pullEvent("mouse_click")
   
-  -- Check if the click was within the clear screen button area
-  if x >= 1 and x <= 10 and y >= 1 and y <= 3 then  -- You can adjust these coordinates for the button
-    clearScreen()
+  -- Define button areas based on the position
+  if x >= 1 and x <= 10 and y >= 1 and y <= 3 then  -- Clear Notes button
+    clearNotes()
+    break
+  elseif x >= 1 and x <= 10 and y >= 4 and y <= 6 then  -- Exit button
+    exitProgram()
+    break
+  elseif x >= 1 and x <= 10 and y >= 7 and y <= 9 then  -- Return button (just return, no action)
+    print("Returning...")
     break
   end
 end
