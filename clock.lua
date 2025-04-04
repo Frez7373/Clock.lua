@@ -1,16 +1,18 @@
 -- Touchscreen Number Guessing Game with Timer & Stopwatch
 
-local num = math.random(1, 100)
-local input = ""
-local startTime = os.epoch("utc")
-local timeLimit = 60000 -- 60 seconds
-local gameOver = false
-local win = false
+-- Initialize game variables
+local targetNumber = math.random(1, 100)
+local userInput = ""
+local gameStartTime = os.epoch("utc")
+local gameTimeLimit = 60000 -- 60 seconds
+local gameEnded = false
+local playerWon = false
 
+-- Clear the terminal and get screen dimensions
 term.clear()
-local w, h = term.getSize()
+local screenWidth, screenHeight = term.getSize()
 
--- Buttons: digits, OK, CLR
+-- Define buttons for digits, OK, and CLR
 local buttons = {
   {label="1", x=3, y=5}, {label="2", x=7, y=5}, {label="3", x=11, y=5},
   {label="4", x=3, y=7}, {label="5", x=7, y=7}, {label="6", x=11, y=7},
@@ -18,91 +20,94 @@ local buttons = {
   {label="0", x=7, y=11}, {label="OK", x=15, y=7}, {label="CLR", x=15, y=9}
 }
 
+-- Function to draw buttons on the screen
 local function drawButtons()
-  for _, b in ipairs(buttons) do
-    term.setCursorPos(b.x, b.y)
-    term.write("[" .. b.label .. "]")
+  for _, button in ipairs(buttons) do
+    term.setCursorPos(button.x, button.y)
+    term.write("[" .. button.label .. "]")
   end
 end
 
-local function drawUI(msg)
+-- Function to update the game interface
+local function updateUI(message)
   term.setCursorPos(1, 1)
   term.clearLine()
   term.write("== Guess the Number ==")
 
   term.setCursorPos(1, 2)
   term.clearLine()
-  term.write("Input: " .. input)
+  term.write("Input: " .. userInput)
 
   term.setCursorPos(1, 3)
   term.clearLine()
-  term.write("Message: " .. (msg or ""))
+  term.write("Message: " .. (message or ""))
 
   term.setCursorPos(1, 4)
   term.clearLine()
-  local elapsed = math.floor((os.epoch("utc") - startTime) / 1000)
-  local remaining = math.max(0, timeLimit // 1000 - elapsed)
-  term.write("⏱️ " .. elapsed .. "s used / " .. remaining .. "s left")
+  local elapsedTime = math.floor((os.epoch("utc") - gameStartTime) / 1000)
+  local remainingTime = math.max(0, math.floor(gameTimeLimit / 1000) - elapsedTime)
+  term.write("⏱️ " .. elapsedTime .. "s used / " .. remainingTime .. "s left")
 end
 
-local function getButtonAt(x, y)
-  for _, b in ipairs(buttons) do
-    if x >= b.x and x <= b.x + #b.label + 1 and y == b.y then
-      return b.label
+-- Function to detect which button was pressed based on coordinates
+local function detectButtonPress(x, y)
+  for _, button in ipairs(buttons) do
+    if x >= button.x and x <= button.x + #button.label + 1 and y == button.y then
+      return button.label
     end
   end
   return nil
 end
 
--- Main loop
-local message = ""
-while not gameOver do
-  drawUI(message)
+-- Main game loop
+local feedbackMessage = ""
+while not gameEnded do
+  updateUI(feedbackMessage)
   drawButtons()
 
-  if os.epoch("utc") - startTime > timeLimit then
-    message = "⛔ Time's up!"
-    gameOver = true
+  if os.epoch("utc") - gameStartTime > gameTimeLimit then
+    feedbackMessage = "⛔ Time's up!"
+    gameEnded = true
     break
   end
 
   local event, _, x, y = os.pullEvent("mouse_click")
-  local b = getButtonAt(x, y)
-  if b then
-    if b == "OK" then
-      local guess = tonumber(input)
-      if guess then
-        if guess < num then
-          message = "Too low!"
-        elseif guess > num then
-          message = "Too high!"
+  local pressedButton = detectButtonPress(x, y)
+  if pressedButton then
+    if pressedButton == "OK" then
+      local playerGuess = tonumber(userInput)
+      if playerGuess then
+        if playerGuess < targetNumber then
+          feedbackMessage = "Too low!"
+        elseif playerGuess > targetNumber then
+          feedbackMessage = "Too high!"
         else
-          win = true
-          gameOver = true
+          playerWon = true
+          gameEnded = true
           break
         end
       else
-        message = "Invalid input!"
+        feedbackMessage = "Invalid input!"
       end
-      input = ""
-    elseif b == "CLR" then
-      input = ""
+      userInput = ""
+    elseif pressedButton == "CLR" then
+      userInput = ""
     else
-      input = input .. b
+      userInput = userInput .. pressedButton
     end
   end
 end
 
--- End screen
+-- Display end-of-game messages
 term.clear()
 term.setCursorPos(1, 2)
 
-if win then
-  local finalTime = math.floor((os.epoch("utc") - startTime) / 1000)
+if playerWon then
+  local totalTime = math.floor((os.epoch("utc") - gameStartTime) / 1000)
   print("🎉 Correct! You guessed it!")
-  print("⏱️ Time taken: " .. finalTime .. " seconds")
+  print("⏱️ Time taken: " .. totalTime .. " seconds")
 else
-  print("😢 Time's up! The number was: " .. num)
+  print("😢 Time's up! The number was: " .. targetNumber)
 end
 
 print("\nTap anywhere to exit...")
