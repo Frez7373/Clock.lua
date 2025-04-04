@@ -20,13 +20,13 @@ h.write(input)
 h.close()
 print("Note saved!")
 
--- Function to clear the screen with custom design
+-- Function to clear the screen with a custom design (borders)
 local function clearScreen()
   term.clear()  -- Clear the screen
   term.setCursorPos(1, 1)  -- Reset cursor position
-  -- Draw a border
+  -- Draw a border around the screen
   print("*************************************")
-  for i = 1, 3 do
+  for i = 1, 18 do
     print("*                                   *")
   end
   print("*************************************")
@@ -36,7 +36,7 @@ end
 -- Function to clear notes
 local function clearNotes()
   local h = fs.open(file, "w")
-  h.close()  -- Clear the file
+  h.close()  -- Clear the file by opening it in write mode without any content
   print("Notes cleared!")
 end
 
@@ -49,20 +49,31 @@ local function exitProgram()
   os.exit()  -- Exit the program
 end
 
+-- Function to display buttons
+local function drawButtons()
+  term.setCursorPos(1, 20)
+  print("[Clear Notes]")
+  term.setCursorPos(1, 22)
+  print("[Exit]")
+  term.setCursorPos(1, 24)
+  print("[Return]")
+end
+
+-- Initial button drawing
+drawButtons()
+
 -- Waiting for mouse clicks on the screen
-print("Click to clear notes, exit, or return...")
 while true do
   local event, button, x, y = os.pullEvent("mouse_click")
   
-  -- Define button areas based on the position
-  if x >= 1 and x <= 10 and y >= 1 and y <= 3 then  -- Clear Notes button
+  -- Check if the mouse click is within button areas
+  if x >= 1 and x <= 14 and y >= 20 and y <= 21 then  -- Clear Notes button
     clearNotes()
-    break
-  elseif x >= 1 and x <= 10 and y >= 4 and y <= 6 then  -- Exit button
+    drawButtons()
+  elseif x >= 1 and x <= 5 and y >= 22 and y <= 23 then  -- Exit button
     exitProgram()
-    break
-  elseif x >= 1 and x <= 10 and y >= 7 and y <= 9 then  -- Return button (just return, no action)
-    print("Returning...")
-    break
+  elseif x >= 1 and x <= 7 and y >= 24 and y <= 25 then  -- Return button
+    print("Returning to the main menu...")
+    break  -- Exit the loop and return to the main process
   end
 end
